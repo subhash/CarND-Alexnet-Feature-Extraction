@@ -66,10 +66,9 @@ def evaluate_metrics(XX, yy):
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    print(evaluate_metrics(X_input, y_input))
     for e in range(epoch):
         X_shuffled, y_shuffled = shuffle(X_input, y_input)
-        for b in range(0, n_input, batch_size):
+        for b in range(0, X_shuffled.shape[0], batch_size):
             end = b + batch_size
             batch_X, batch_y = X_shuffled[b:end], y_shuffled[b:end]
             sess.run(training_operation, feed_dict={X: batch_X, y: batch_y})
