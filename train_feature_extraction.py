@@ -34,8 +34,8 @@ fc7 = tf.stop_gradient(fc7)
 
 # TODO: Add the final layer for traffic sign classification.
 shape = [fc7.get_shape().as_list()[-1], n_classes]
-W = tf.Variable(tf.truncated_normal(shape))
-b = tf.Variable(tf.truncated_normal([n_classes]))
+W = tf.Variable(tf.truncated_normal(shape, stddev=1e-2))
+b = tf.Variable(tf.zeros(n_classes))
 fc8 = tf.nn.xw_plus_b(fc7, W, b)
 logits = fc8
 
@@ -46,7 +46,7 @@ batch_size = 128
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_one_hot)
 loss = tf.reduce_mean(cross_entropy)
-optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+optimizer = tf.train.AdamOptimizer()
 training_operation = optimizer.minimize(loss)
 accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, 1), tf.argmax(y_one_hot, 1)), tf.float32))
 
@@ -66,8 +66,8 @@ def evaluate_metrics(XX, yy):
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    X_input = X_input[:10]
-    y_input = y_input[:10]
+    #X_input = X_input[:10]
+    #y_input = y_input[:10]
     print("Starting ..")
     for e in range(epoch):
         t0 = time.time()
@@ -79,5 +79,6 @@ with tf.Session() as sess:
         training_accuracy, training_loss = evaluate_metrics(X_input, y_input)
         validation_accuracy, validation_loss = evaluate_metrics(X_valid, y_valid)
         print("time for epoch ", e, (time.time() - t0))
-        print("metrics at epoch ", e, training_accuracy, training_loss, validation_accuracy, validation_loss)
+        print("metrics at epoch ", "training acc-", training_accuracy, "training loss - ", training_loss)
+        print("val acc-", validation_accuracy, "val loss - ", validation_loss)
 
