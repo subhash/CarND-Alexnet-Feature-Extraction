@@ -1,4 +1,5 @@
 import pickle
+import time
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -40,7 +41,7 @@ logits = fc8
 
 # TODO: Define loss, training, accuracy operations.
 learning_rate = 0.0001
-epoch = 2
+epoch = 10
 batch_size = 128
 
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_one_hot)
@@ -53,20 +54,23 @@ accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, 1), tf.argmax(y_one
 
 def evaluate_metrics(XX, yy):
     sess = tf.get_default_session()
-    len_X = len(XX)
-    acc, total_acc, l, n_batches = 0., 0., 0., 0.
-    for b in range(0, len_X, batch_size):
+    total_loss, total_acc = 0., 0.
+    for b in range(0, XX.shape[0], batch_size):
         end = b + batch_size
         batch_X, batch_y = XX[b:end], yy[b:end]
-        l += sess.run(loss, feed_dict = {X: batch_X, y: batch_y})
-        total_acc += sess.run(accuracy, feed_dict = {X: batch_X, y: batch_y})
-        n_batches += 1
-    return total_acc/n_batches, l
+        l, a = sess.run([loss, accuracy], feed_dict = {X: batch_X, y: batch_y})
+        total_loss += (l * batch_X.shape[0])
+        total_acc += (a * batch_X.shape[0])
+    return total_acc/XX.shape[0], total_loss/XX.shape[0]
 
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
+    X_input = X_input[:10]
+    y_input = y_input[:10]
+    print("Starting ..")
     for e in range(epoch):
+        t0 = time.time()
         X_shuffled, y_shuffled = shuffle(X_input, y_input)
         for b in range(0, X_shuffled.shape[0], batch_size):
             end = b + batch_size
@@ -74,5 +78,6 @@ with tf.Session() as sess:
             sess.run(training_operation, feed_dict={X: batch_X, y: batch_y})
         training_accuracy, training_loss = evaluate_metrics(X_input, y_input)
         validation_accuracy, validation_loss = evaluate_metrics(X_valid, y_valid)
+        print("time for epoch ", e, (time.time() - t0))
         print("metrics at epoch ", e, training_accuracy, training_loss, validation_accuracy, validation_loss)
 
